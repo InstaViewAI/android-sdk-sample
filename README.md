@@ -39,6 +39,9 @@ Copy the credential keys from `local.properties.sample` into your own `local.pro
 ```properties
 instavision.partnerId=your-partner-id
 instavision.clientId=your-client-id
+instavision.debugStorePassword=your-debug-store-password
+instavision.debugKeyAlias=your-debug-key-alias
+instavision.debugKeyPassword=your-debug-key-password
 ```
 
 They are surfaced to the app as `BuildConfig.PARTNER_ID` / `BuildConfig.CLIENT_ID`. If
