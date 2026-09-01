@@ -1,0 +1,19 @@
+# Copy the credential lines below into your own `local.properties` (which is gitignored)
+# and fill in the values issued to you by InstaVision.
+#
+# `local.properties` also needs an `sdk.dir` line pointing at your Android SDK; Android
+# Studio writes that one for you the first time you open the project.
+
+# The partner identifier issued to your organisation.
+instavision.partnerId=
+
+# The client identifier for this application.
+instavision.clientId=
+
+# Credentials for the shared debug keystore at `keys/debug_key`, so your debug builds carry the
+# same signing certificate as everyone else's. Leave these blank and the build falls back to your
+# own `~/.android/debug.keystore` — it still compiles and runs, but Google sign-in will not work
+# because that certificate is not registered with Firebase.
+instavision.debugStorePassword=
+instavision.debugKeyAlias=
+instavision.debugKeyPassword=
