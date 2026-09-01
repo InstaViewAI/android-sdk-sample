@@ -237,12 +237,16 @@ class SecurityContactViewModel : ViewModel() {
     _uiState.update { it.copy(otp = value) }
   }
 
-  /** Runs whichever request the panel on screen is waiting on. */
-  fun onAdvance() {
+  /**
+   * Runs whichever request the panel on screen is waiting on. [markStep] is false when the screen
+   * was opened from security settings rather than from the checklist, which is the one difference
+   * between editing the address afterwards and collecting it during setup.
+   */
+  fun onAdvance(markStep: Boolean = true) {
     when (_uiState.value.stage) {
       ContactStage.Address -> submit()
       ContactStage.Phone -> sendCode()
-      ContactStage.Verify -> verifyCode()
+      ContactStage.Verify -> verifyCode(markStep = markStep)
     }
   }
 
@@ -315,8 +319,8 @@ class SecurityContactViewModel : ViewModel() {
     requestOtp(spaceId, state.phone)
   }
 
-  /** Attaches the verified number to the profile, then marks the step done. */
-  fun verifyCode() {
+  /** Attaches the verified number to the profile, then marks the step done when [markStep]. */
+  fun verifyCode(markStep: Boolean = true) {
     val spaceId = SessionStore.spaceId
     val state = _uiState.value
     if (spaceId.isEmpty() || !state.canVerify) return
@@ -334,7 +338,11 @@ class SecurityContactViewModel : ViewModel() {
       )
         .onSuccess {
           resendJob?.cancel()
-          markStepComplete(spaceId)
+          if (markStep) {
+            markStepComplete(spaceId)
+          } else {
+            _uiState.update { it.copy(busy = false, done = true) }
+          }
         }
         .onFailure { error ->
           _uiState.update { it.copy(busy = false, error = error.userMessage()) }

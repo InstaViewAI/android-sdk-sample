@@ -23,13 +23,17 @@ internal suspend fun markSetupStep(
 }
 
 /**
- * Puts the home in test mode, which is what keeps a newly configured system's first arm away from
- * a real dispatcher. Both the test step and the checklist's own Finish send it, so it lives here.
+ * Puts the home in or out of test mode, which is what keeps a system's alarms away from a real
+ * dispatcher. The test step and the checklist's Finish only ever switch it on, so [enable]
+ * defaults to that; security settings is the one caller that also switches it back off.
  */
-internal suspend fun enableTestMode(spaceId: String): Result<Unit> = sdkCall { onSuccess, onError ->
+internal suspend fun enableTestMode(
+  spaceId: String,
+  enable: Boolean = true,
+): Result<Unit> = sdkCall { onSuccess, onError ->
   InstaVision.securityServices.enableTestMode(
     spaceId = spaceId,
-    request = TestModeRequest(enable = true),
+    request = TestModeRequest(enable = enable),
     onSuccess = onSuccess,
     onError = onError,
   )

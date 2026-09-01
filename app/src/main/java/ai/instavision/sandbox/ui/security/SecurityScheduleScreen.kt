@@ -53,7 +53,7 @@ private const val EMPTY_BODY =
  * on one scrolling screen, so the whole SDK surface is visible at once.
  */
 @Composable
-fun SecurityScheduleScreen(onBack: () -> Unit, onDone: () -> Unit) {
+fun SecurityScheduleScreen(onBack: () -> Unit, onDone: () -> Unit, standalone: Boolean = false) {
   val viewModel: SecurityScheduleViewModel = viewModel()
   val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -70,7 +70,7 @@ fun SecurityScheduleScreen(onBack: () -> Unit, onDone: () -> Unit) {
       ) {
         PrimaryButton(
           text = "Done",
-          onClick = viewModel::finish,
+          onClick = { if (standalone) onDone() else viewModel.finish() },
           enabled = !state.loading,
           loading = state.busy,
         )

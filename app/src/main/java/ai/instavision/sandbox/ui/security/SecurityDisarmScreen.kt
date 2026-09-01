@@ -44,14 +44,14 @@ private const val SAFE_WORD_NOTE =
  * on one screen because only the second half asks anything of the user.
  */
 @Composable
-fun SecurityDisarmScreen(onBack: () -> Unit, onDone: () -> Unit) {
+fun SecurityDisarmScreen(onBack: () -> Unit, onDone: () -> Unit, standalone: Boolean = false) {
   val viewModel: SecurityDisarmViewModel = viewModel()
   val state by viewModel.uiState.collectAsStateWithLifecycle()
 
   LaunchedEffect(state.done) { if (state.done) onDone() }
 
   DetailScaffold(
-    title = SecuritySteps.DisarmSettings.title,
+    title = if (standalone) "Safe word" else SecuritySteps.DisarmSettings.title,
     onBack = onBack,
     bottomBar = {
       Box(
@@ -61,7 +61,7 @@ fun SecurityDisarmScreen(onBack: () -> Unit, onDone: () -> Unit) {
       ) {
         PrimaryButton(
           text = "Done",
-          onClick = viewModel::submit,
+          onClick = { viewModel.submit(markStep = !standalone) },
           enabled = state.canSubmit,
           loading = state.busy,
         )

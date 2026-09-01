@@ -54,23 +54,37 @@ class SecurityDisarmViewModel : ViewModel() {
     _uiState.update { it.copy(safeWord = trimmed) }
   }
 
-  /** Saves the safe word and marks the step done in the same request. */
-  fun submit() {
+  /**
+   * Saves the safe word. During setup it travels with the step completion in one `updateProfile`
+   * call, which is what production does; opened from security settings afterwards it goes alone
+   * through `updateSettings`, which is the endpoint production's own safe-word screen uses.
+   */
+  fun submit(markStep: Boolean = true) {
     val spaceId = SessionStore.spaceId
     val state = _uiState.value
     if (spaceId.isEmpty() || !state.canSubmit) return
     _uiState.update { it.copy(busy = true, error = null) }
     viewModelScope.launch {
       sdkCall<SecurityProfileResponse> { onSuccess, onError ->
-        InstaVision.securityServices.updateProfile(
-          spaceId = spaceId,
-          request = SecurityProfileRequest(
-            safeWord = state.safeWord,
-            setupStep = SecuritySteps.DisarmSettings.apiName,
-          ),
-          onSuccess = onSuccess,
-          onError = onError,
+        val request = SecurityProfileRequest(
+          safeWord = state.safeWord,
+          setupStep = if (markStep) SecuritySteps.DisarmSettings.apiName else null,
         )
+        if (markStep) {
+          InstaVision.securityServices.updateProfile(
+            spaceId = spaceId,
+            request = request,
+            onSuccess = onSuccess,
+            onError = onError,
+          )
+        } else {
+          InstaVision.securityServices.updateSettings(
+            spaceId = spaceId,
+            request = request,
+            onSuccess = onSuccess,
+            onError = onError,
+          )
+        }
       }
         .onSuccess { _uiState.update { it.copy(busy = false, done = true) } }
         .onFailure { error ->

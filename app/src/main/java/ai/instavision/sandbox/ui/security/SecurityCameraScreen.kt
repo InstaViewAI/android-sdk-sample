@@ -72,14 +72,14 @@ private fun Device.selectionReason(): String = when {
  * the two halves; the sample drops the walkthrough and lets both halves share one scrolling screen.
  */
 @Composable
-fun SecurityCameraScreen(onBack: () -> Unit, onDone: () -> Unit) {
+fun SecurityCameraScreen(onBack: () -> Unit, onDone: () -> Unit, standalone: Boolean = false) {
   val viewModel: SecurityCameraViewModel = viewModel()
   val state by viewModel.uiState.collectAsStateWithLifecycle()
 
   LaunchedEffect(state.done) { if (state.done) onDone() }
 
   DetailScaffold(
-    title = SecuritySteps.CameraSetup.title,
+    title = if (standalone) "Security cameras" else SecuritySteps.CameraSetup.title,
     onBack = onBack,
     bottomBar = {
       Box(
@@ -89,7 +89,13 @@ fun SecurityCameraScreen(onBack: () -> Unit, onDone: () -> Unit) {
       ) {
         PrimaryButton(
           text = if (state.selectionSaved) "Done" else "Save cameras",
-          onClick = { if (state.selectionSaved) viewModel.finish() else viewModel.saveSelection() },
+          onClick = {
+            when {
+              !state.selectionSaved -> viewModel.saveSelection()
+              standalone -> onDone()
+              else -> viewModel.finish()
+            }
+          },
           enabled = state.selectedIds.isNotEmpty(),
           loading = state.busy,
         )
