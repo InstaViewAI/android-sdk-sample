@@ -3,7 +3,6 @@ package ai.instavision.sandbox.ui.settings
 import ai.instavision.sandbox.data.SessionStore
 import ai.instavision.sandbox.ui.common.sdkCall
 import ai.instavision.sandbox.ui.common.userMessage
-import ai.instavision.sandbox.ui.space.COUNTRY_OPTIONS
 import ai.instavision.guardian.sdk.InstaVision
 import ai.instavision.guardian.sdk.data.entity.AutoTopUp
 import ai.instavision.guardian.sdk.data.entity.CellularData
@@ -63,10 +62,6 @@ data class SpaceSettingsUiState(
   val region: String = "",
   /** Editable postal or ZIP code, kept as text so non-numeric codes survive. */
   val postalCode: String = "",
-  /** Editable country of the home's address, picked from [COUNTRY_OPTIONS]. */
-  val country: String = "",
-  /** Countries the address form offers. */
-  val countryOptions: List<String> = COUNTRY_OPTIONS,
   /** Whether familiar faces are recognised and named in events across this home. */
   val faceRecognitionEnabled: Boolean = false,
   /** Unit every temperature reading in this home is shown in. */
@@ -133,8 +128,6 @@ class SpaceSettingsViewModel : ViewModel() {
         city = space.address.city,
         region = space.address.state,
         postalCode = space.address.postalCode,
-        country = space.address.country,
-        countryOptions = withCountry(space.address.country),
         faceRecognitionEnabled = space.settings?.face == true,
         temperatureUnit = TemperatureUnit.fromValue(
           space.settings?.temperatureUnit ?: TemperatureUnit.FAHRENHEIT.value
@@ -177,11 +170,6 @@ class SpaceSettingsViewModel : ViewModel() {
     _uiState.update { it.copy(postalCode = value) }
   }
 
-  /** Records the country picked from the dropdown. */
-  fun onCountryChange(value: String) {
-    _uiState.update { it.copy(country = value) }
-  }
-
   /**
    * Saves the home's name and address together. The request carries both regardless of which the
    * user touched, because the SDK takes the address as a whole rather than as a patch.
@@ -198,7 +186,6 @@ class SpaceSettingsViewModel : ViewModel() {
           updateSpaceRequest = UpdateSpaceRequest(
             address = UpdateAddressRequest(
               city = current.city.trim(),
-              country = current.country.trim(),
               postalCode = current.postalCode.trim(),
               state = current.region.trim(),
               street = current.street.trim(),
@@ -346,14 +333,6 @@ class SpaceSettingsViewModel : ViewModel() {
   fun dismissNotice() {
     _uiState.update { it.copy(notice = null, error = null) }
   }
-
-  /** The offered countries with the home's own folded in, so a stored value is never dropped. */
-  private fun withCountry(country: String): List<String> =
-    if (country.isEmpty() || country in COUNTRY_OPTIONS) {
-      COUNTRY_OPTIONS
-    } else {
-      COUNTRY_OPTIONS + country
-    }
 
   /** Reads who has access to the home; a failure leaves the previous list in place. */
   private suspend fun loadMembers(space: Space) {

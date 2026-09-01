@@ -1,6 +1,5 @@
 package ai.instavision.sandbox.ui.auth
 
-import ai.instavision.sandbox.ui.common.AppDropdownField
 import ai.instavision.sandbox.ui.common.AppTextField
 import ai.instavision.sandbox.ui.common.DetailScaffold
 import ai.instavision.sandbox.ui.common.ErrorBanner
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.MaterialTheme
@@ -93,27 +91,13 @@ fun SignUpScreen(
       enabled = !state.busy,
     )
     FieldError(message = state.emailError)
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(space = FieldSpacing),
-    ) {
-      AppDropdownField(
-        value = state.countryCode,
-        options = CountryCallingCodes,
-        onSelect = viewModel::onCountryCodeChange,
-        placeholder = "Code",
-        modifier = Modifier.width(CountryCodeWidth),
-        enabled = !state.busy,
-      )
-      AppTextField(
-        value = state.phone,
-        onValueChange = viewModel::onPhoneChange,
-        placeholder = "Phone number",
-        modifier = Modifier.weight(1f),
-        keyboardType = KeyboardType.Phone,
-        enabled = !state.busy,
-      )
-    }
+    AppTextField(
+      value = state.phone,
+      onValueChange = viewModel::onPhoneChange,
+      placeholder = "Phone number",
+      keyboardType = KeyboardType.Phone,
+      enabled = !state.busy,
+    )
     PasswordField(
       value = state.password,
       onValueChange = viewModel::onPasswordChange,
@@ -157,6 +141,3 @@ private val HeroSpacing = 8.dp
 
 /** Gap between two fields sharing a row. */
 private val FieldSpacing = 12.dp
-
-/** Width of the calling-code dropdown, sized for the longest code on offer. */
-private val CountryCodeWidth = 112.dp
