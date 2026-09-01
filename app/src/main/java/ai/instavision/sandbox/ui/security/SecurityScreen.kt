@@ -523,11 +523,12 @@ private fun monitoredCaption(cameras: Int): String = when (cameras) {
 }
 
 /** The dot beside a camera's own state: green once it followed the arm, amber while it has not. */
+@Composable
 private fun cameraStateColor(state: String): Color = when (state) {
-  SecurityStatus.ARMED -> Success
-  SecurityStatus.FAILED -> Danger
-  SecurityStatus.DISARMED -> TextTertiary
-  else -> Warning
+  SecurityStatus.ARMED -> AppTheme.colors.success
+  SecurityStatus.FAILED -> AppTheme.colors.danger
+  SecurityStatus.DISARMED -> AppTheme.colors.textTertiary
+  else -> AppTheme.colors.warning
 }
 
 /** Turns a log's `properties` map back into JSON so it can be read as the payload type it is. */
