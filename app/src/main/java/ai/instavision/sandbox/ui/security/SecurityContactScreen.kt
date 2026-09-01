@@ -51,7 +51,7 @@ private const val TIME_ZONE_FAILED =
  * profile when there is not one yet; the step only completes once the number is verified.
  */
 @Composable
-fun SecurityContactScreen(onBack: () -> Unit, onDone: () -> Unit) {
+fun SecurityContactScreen(onBack: () -> Unit, onDone: () -> Unit, standalone: Boolean = false) {
   val viewModel: SecurityContactViewModel = viewModel()
   val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -59,7 +59,7 @@ fun SecurityContactScreen(onBack: () -> Unit, onDone: () -> Unit) {
   BackHandler(enabled = state.stage != ContactStage.Address) { viewModel.back() }
 
   DetailScaffold(
-    title = "Contact information",
+    title = if (standalone) "Personal information" else "Contact information",
     onBack = { if (!viewModel.back()) onBack() },
     bottomBar = {
       Box(
@@ -69,7 +69,7 @@ fun SecurityContactScreen(onBack: () -> Unit, onDone: () -> Unit) {
       ) {
         PrimaryButton(
           text = advanceLabel(state),
-          onClick = viewModel::onAdvance,
+          onClick = { viewModel.onAdvance(markStep = !standalone) },
           enabled = state.canAdvance && !state.busy,
           loading = state.busy,
         )

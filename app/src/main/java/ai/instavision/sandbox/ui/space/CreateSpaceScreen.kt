@@ -1,6 +1,5 @@
 package ai.instavision.sandbox.ui.space
 
-import ai.instavision.sandbox.ui.common.AppDropdownField
 import ai.instavision.sandbox.ui.common.AppTextField
 import ai.instavision.sandbox.ui.common.DetailScaffold
 import ai.instavision.sandbox.ui.common.ErrorBanner
@@ -94,23 +93,12 @@ private fun AddressForm(state: CreateSpaceUiState, viewModel: CreateSpaceViewMod
         enabled = !state.loading,
       )
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(space = FieldGap)) {
-      AppTextField(
-        value = state.postalCode,
-        onValueChange = viewModel::onPostalCodeChange,
-        placeholder = "ZIP",
-        modifier = Modifier.weight(1f),
-        enabled = !state.loading,
-      )
-      AppDropdownField(
-        value = state.country,
-        options = COUNTRY_OPTIONS,
-        onSelect = viewModel::onCountryChange,
-        placeholder = "Country",
-        modifier = Modifier.weight(1f),
-        enabled = !state.loading,
-      )
-    }
+    AppTextField(
+      value = state.postalCode,
+      onValueChange = viewModel::onPostalCodeChange,
+      placeholder = "ZIP",
+      enabled = !state.loading,
+    )
   }
 }
 

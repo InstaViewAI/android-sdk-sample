@@ -27,8 +27,8 @@ private val EMAIL_PATTERN = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]{2,}$")
 /** Language every account is created with; the sample deliberately offers no choice of language. */
 private const val ACCOUNT_LANGUAGE = "en"
 
-/** Country calling codes the phone field offers, kept to the sample's three markets. */
-val CountryCallingCodes: List<String> = listOf("+1", "+44", "+91")
+/** Dialling code every account is created with; the sample serves the US only. */
+private const val PHONE_COUNTRY_CODE = "+1"
 
 /** Everything [SignUpScreen] draws, including per-field validation messages. */
 data class SignUpUiState(
@@ -38,8 +38,6 @@ data class SignUpUiState(
   val lastName: String = "",
   /** E-mail the new account will be created with. */
   val email: String = "",
-  /** Calling code prefixed to [phone]; only meaningful once a number is typed. */
-  val countryCode: String = CountryCallingCodes.first(),
   /** Optional phone number, sent with the profile update when it is not blank. */
   val phone: String = "",
   /** Chosen password, kept in memory only for the duration of the screen. */
@@ -81,7 +79,7 @@ data class SignUpUiState(
   /** The phone number to send with the profile update, or null while the optional field is blank. */
   fun phoneNumber(): PhoneNumber? = phone.trim()
     .takeIf { it.isNotBlank() }
-    ?.let { PhoneNumber(code = countryCode, value = it) }
+    ?.let { PhoneNumber(code = PHONE_COUNTRY_CODE, value = it) }
 }
 
 /**
@@ -109,11 +107,6 @@ class SignUpViewModel : ViewModel() {
   /** Records e-mail edits and clears any stale validation message for that field. */
   fun onEmailChange(value: String) {
     _state.update { it.copy(email = value, emailError = null, error = null) }
-  }
-
-  /** Records the calling code chosen next to the phone field. */
-  fun onCountryCodeChange(value: String) {
-    _state.update { it.copy(countryCode = value, error = null) }
   }
 
   /** Records phone-number edits; the field is optional, so there is nothing to validate. */

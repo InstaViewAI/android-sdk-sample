@@ -61,11 +61,15 @@ sealed interface Screen {
   /** Every arming session the space's plan still retains, newest first. */
   data object SecurityLog : Screen
 
+  /** Everything about monitoring that can still be changed once the checklist is finished. */
+  data object SecuritySettings : Screen
+
   /**
-   * Placeholder for a setup step that has no design yet, identified by its [apiName] as the
-   * backend names it, for example `"CameraSetup"`.
+   * One setup step's screen, identified by its [apiName] as the backend names it, for example
+   * `"CameraSetup"`. [standalone] marks the screen as opened from security settings rather than
+   * from the checklist, which is what stops an edit rewriting the step's `setup_step`.
    */
-  data class SecurityStep(val apiName: String) : Screen
+  data class SecurityStep(val apiName: String, val standalone: Boolean = false) : Screen
 
   /** Root of the Settings tab: the account, the space and the cameras in it. */
   data object Settings : Screen

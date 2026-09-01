@@ -1,6 +1,5 @@
 package ai.instavision.sandbox.ui.settings
 
-import ai.instavision.sandbox.ui.common.AppDropdownField
 import ai.instavision.sandbox.ui.common.AppTextField
 import ai.instavision.sandbox.ui.common.ConfirmDialog
 import ai.instavision.sandbox.ui.common.DestructiveButton
@@ -165,23 +164,12 @@ private fun DetailsForm(state: SpaceSettingsUiState, viewModel: SpaceSettingsVie
         enabled = !state.busy,
       )
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(FieldGap)) {
-      AppTextField(
-        value = state.postalCode,
-        onValueChange = viewModel::onPostalCodeChange,
-        placeholder = "ZIP",
-        modifier = Modifier.weight(1f),
-        enabled = !state.busy,
-      )
-      AppDropdownField(
-        value = state.country,
-        options = state.countryOptions,
-        onSelect = viewModel::onCountryChange,
-        placeholder = "Country",
-        modifier = Modifier.weight(1f),
-        enabled = !state.busy,
-      )
-    }
+    AppTextField(
+      value = state.postalCode,
+      onValueChange = viewModel::onPostalCodeChange,
+      placeholder = "ZIP",
+      enabled = !state.busy,
+    )
   }
   PrimaryButton(
     text = "Save changes",

@@ -51,14 +51,14 @@ private const val EMPTY_BODY =
  * the monitoring group rather than only on the cameras.
  */
 @Composable
-fun SecurityInviteScreen(onBack: () -> Unit, onDone: () -> Unit) {
+fun SecurityInviteScreen(onBack: () -> Unit, onDone: () -> Unit, standalone: Boolean = false) {
   val viewModel: SecurityInviteViewModel = viewModel()
   val state by viewModel.uiState.collectAsStateWithLifecycle()
 
   LaunchedEffect(state.done) { if (state.done) onDone() }
 
   DetailScaffold(
-    title = SecuritySteps.InviteHouseholds.title,
+    title = if (standalone) "Call list" else SecuritySteps.InviteHouseholds.title,
     onBack = onBack,
     bottomBar = {
       Box(
@@ -68,7 +68,7 @@ fun SecurityInviteScreen(onBack: () -> Unit, onDone: () -> Unit) {
       ) {
         PrimaryButton(
           text = "Done",
-          onClick = viewModel::finish,
+          onClick = { if (standalone) onDone() else viewModel.finish() },
           enabled = !state.loading,
           loading = state.busy,
         )

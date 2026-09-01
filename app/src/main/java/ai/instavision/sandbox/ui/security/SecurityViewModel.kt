@@ -1,6 +1,5 @@
 package ai.instavision.sandbox.ui.security
 
-import ai.instavision.sandbox.data.EventTokenStore
 import ai.instavision.sandbox.data.SessionStore
 import ai.instavision.sandbox.ui.common.SdkException
 import ai.instavision.sandbox.ui.common.sdkCall
@@ -8,6 +7,7 @@ import ai.instavision.sandbox.ui.common.userMessage
 import ai.instavision.guardian.sdk.InstaVision
 import ai.instavision.guardian.sdk.data.entity.SecurityLog
 import ai.instavision.guardian.sdk.data.entity.Device
+import ai.instavision.guardian.sdk.data.entity.SecurityDevice
 import ai.instavision.guardian.sdk.data.entity.Space
 import ai.instavision.guardian.sdk.data.entity.response.SecurityProfileResponse
 import ai.instavision.network.data.enums.ErrorCode
@@ -98,13 +98,19 @@ data class SecurityUiState(
   val loading: Boolean = true,
   /** True while an arm or disarm is in flight, including the wait for it to settle. */
   val busy: Boolean = false,
-  /** The newest arming sessions, at most [MaxRecentSessions] of them; empty until they land. */
-  val sessions: List<SecuritySession> = emptyList(),
+  /** The newest log entries, read until [MaxRecentSessions] arming sessions close among them. */
+  val logs: List<SecurityLog> = emptyList(),
   /** True while the first page of the log is in flight, which is only ever read once. */
   val logsLoading: Boolean = false,
   /** Message from the last failed request; a missing profile never sets this. */
   val error: String? = null,
-)
+) {
+  /** The profile's own status word, which is what the dial reads; a home with none is stood down. */
+  val status: String get() = profile?.status ?: SecurityStatus.DISARMED
+
+  /** The cameras monitoring covers, as the profile lists them; empty for a home without one. */
+  val cameras: List<SecurityDevice> get() = profile?.deviceList.orEmpty()
+}
 
 /**
  * Backs the Security tab: reads the monitoring profile of [SessionStore.selectedSpace] and, once
@@ -223,7 +229,8 @@ class SecurityViewModel : ViewModel() {
   }
 
   /**
-   * Reads the space's security log until it holds the [MaxRecentSessions] sessions the tab shows.
+   * Reads the space's security log until it holds enough entries for the [MaxRecentSessions]
+   * sessions the tab previews.
    *
    * A session only closes on an `Armed` entry, so a page can hold none at all — a home armed once
    * a fortnight puts a whole page between two of them. Reading a single page would leave the tab
@@ -232,10 +239,11 @@ class SecurityViewModel : ViewModel() {
    * retention window to fill three cards.
    *
    * Grouping runs over the accumulated entries rather than page by page, because a session that
-   * straddles a page boundary is only whole once both halves are in hand.
+   * straddles a page boundary is only whole once both halves are in hand. The sessions themselves
+   * are never published: they only bound the read, and the tab renders the raw entries flat.
    */
   private suspend fun loadRecentLogs(spaceId: String) {
-    _uiState.update { it.copy(logsLoading = it.sessions.isEmpty()) }
+    _uiState.update { it.copy(logsLoading = it.logs.isEmpty()) }
     val entries = mutableListOf<SecurityLog>()
     var sessions = emptyList<SecuritySession>()
     var page = 0
@@ -250,10 +258,7 @@ class SecurityViewModel : ViewModel() {
       sessions = groupSecuritySessions(entries)
       page += 1
     }
-    EventTokenStore.refresh(spaceId)
-    _uiState.update {
-      it.copy(sessions = sessions.signed(spaceId).take(MaxRecentSessions), logsLoading = false)
-    }
+    _uiState.update { it.copy(logs = entries.toList(), logsLoading = false) }
   }
 
   /** Folds a freshly read profile into the state; a null profile means setup was never started. */

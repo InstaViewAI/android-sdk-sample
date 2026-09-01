@@ -15,22 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * Countries the address forms offer. The SDK types `Address.country` as free text and ships no
- * country list, so the sample carries a short one rather than pretending to be exhaustive.
- */
-internal val COUNTRY_OPTIONS = listOf(
-  "United States",
-  "Canada",
-  "United Kingdom",
-  "Ireland",
-  "Australia",
-  "New Zealand",
-  "India",
-  "Singapore",
-  "Germany",
-  "France",
-)
+/** ISO code every space address is created with, since the sample is US-only. */
+private const val COUNTRY_CODE = "US"
 
 /**
  * Everything [CreateSpaceScreen] draws. Only the name is required: the SDK's [Address] declares its
@@ -47,8 +33,6 @@ data class CreateSpaceUiState(
   val region: String = "",
   /** Optional postal or ZIP code, kept as text so non-numeric codes survive. */
   val postalCode: String = "",
-  /** Country of the space's address, chosen from [COUNTRY_OPTIONS]. */
-  val country: String = COUNTRY_OPTIONS.first(),
   /** True while the create request is in flight. */
   val loading: Boolean = false,
   /** Banner-level failure from the SDK, or null when there is nothing to report. */
@@ -97,11 +81,6 @@ class CreateSpaceViewModel : ViewModel() {
     _state.update { it.copy(postalCode = value, error = null) }
   }
 
-  /** Records the country chosen from the dropdown and clears the previous failure. */
-  fun onCountryChange(value: String) {
-    _state.update { it.copy(country = value, error = null) }
-  }
-
   /**
    * Creates the space and makes it the selected one. Whatever the visitor left out of the address
    * goes up as an empty string, which is the only shape the SDK's non-null [Address] allows.
@@ -116,7 +95,7 @@ class CreateSpaceViewModel : ViewModel() {
           request = CreateSpaceRequest(
             address = Address(
               city = current.city.trim(),
-              country = current.country.trim(),
+              country = COUNTRY_CODE,
               postalCode = current.postalCode.trim(),
               state = current.region.trim(),
               street = current.street.trim(),

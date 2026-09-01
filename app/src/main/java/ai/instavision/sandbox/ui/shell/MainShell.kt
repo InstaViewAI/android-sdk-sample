@@ -19,7 +19,9 @@ import ai.instavision.sandbox.ui.permissions.PermissionsScreen
 import ai.instavision.sandbox.ui.security.SecurityContactScreen
 import ai.instavision.sandbox.ui.security.SecurityLogScreen
 import ai.instavision.sandbox.ui.security.SecurityScreen
+import ai.instavision.sandbox.ui.security.SecuritySettingsScreen
 import ai.instavision.sandbox.ui.security.SecuritySetupScreen
+import ai.instavision.sandbox.ui.security.SecuritySteps
 import ai.instavision.sandbox.ui.security.SecurityStepScreen
 import ai.instavision.sandbox.ui.settings.AccountSettingsScreen
 import ai.instavision.sandbox.ui.settings.ChangePasswordScreen
@@ -128,6 +130,13 @@ private val Tab.label: String
   }
 
 /**
+ * The destination for one of [SecuritySteps]' screens opened from security settings rather than
+ * from the checklist, which is what suppresses its `setup_step` write.
+ */
+private fun securityStep(step: SecuritySteps): Screen =
+  Screen.SecurityStep(apiName = step.apiName, standalone = true)
+
+/**
  * Renders the destination on top of the back stack and wires every screen's callbacks to
  * [navigator]. Sign-in, verification and sign-out swap the whole navigation mode rather than push,
  * so the back gesture can never walk from the tabs into the account flow or the other way round.
@@ -195,6 +204,18 @@ private fun Destination(navigator: AppNavigator) {
     Screen.Security -> SecurityScreen(
       onSetup = { navigator.push(Screen.SecuritySetup) },
       onLog = { navigator.push(Screen.SecurityLog) },
+      onSettings = { navigator.push(Screen.SecuritySettings) },
+      onEditCameras = { navigator.push(securityStep(SecuritySteps.CameraSetup)) },
+    )
+
+    Screen.SecuritySettings -> SecuritySettingsScreen(
+      onBack = back,
+      onPersonalInfo = { navigator.push(securityStep(SecuritySteps.ContactInformation)) },
+      onSafeWord = { navigator.push(securityStep(SecuritySteps.DisarmSettings)) },
+      onCallList = { navigator.push(securityStep(SecuritySteps.InviteHouseholds)) },
+      onCameras = { navigator.push(securityStep(SecuritySteps.CameraSetup)) },
+      onSchedule = { navigator.push(securityStep(SecuritySteps.ScheduleSystem)) },
+      onLog = { navigator.push(Screen.SecurityLog) },
     )
 
     Screen.SecurityLog -> SecurityLogScreen(
@@ -214,6 +235,7 @@ private fun Destination(navigator: AppNavigator) {
       apiName = screen.apiName,
       onBack = back,
       onDone = back,
+      standalone = screen.standalone,
     )
 
     Screen.Settings -> SettingsScreen(

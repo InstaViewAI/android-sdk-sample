@@ -16,20 +16,41 @@ private const val UNKNOWN_STEP_BODY =
     "the app, or carry on with the steps it does recognise."
 
 /**
- * Routes a checklist step's `apiName` to its screen. Contact information never arrives here — the
- * checklist opens it directly — so every value this handles is one of the six later steps, and an
- * unrecognised one is a backend the sample has fallen behind rather than a step left unbuilt.
+ * Routes a checklist step's `apiName` to its screen. An unrecognised value is a backend the sample
+ * has fallen behind rather than a step left unbuilt.
+ *
+ * [standalone] is set when the screen was opened from security settings instead of the checklist,
+ * which suppresses the step's `setup_step` write: an edit made after setup must not rewrite the
+ * checklist. Only the five steps security settings links to honour it; the rest ignore it because
+ * nothing outside setup opens them.
  */
 @Composable
-fun SecurityStepScreen(apiName: String, onBack: () -> Unit, onDone: () -> Unit) {
+fun SecurityStepScreen(
+  apiName: String,
+  onBack: () -> Unit,
+  onDone: () -> Unit,
+  standalone: Boolean = false,
+) {
   when (SecuritySteps.fromApiName(apiName)) {
-    SecuritySteps.CameraSetup -> SecurityCameraScreen(onBack = onBack, onDone = onDone)
+    SecuritySteps.CameraSetup ->
+      SecurityCameraScreen(onBack = onBack, onDone = onDone, standalone = standalone)
+
     SecuritySteps.ArmSettings -> SecurityArmScreen(onBack = onBack, onDone = onDone)
-    SecuritySteps.DisarmSettings -> SecurityDisarmScreen(onBack = onBack, onDone = onDone)
-    SecuritySteps.ScheduleSystem -> SecurityScheduleScreen(onBack = onBack, onDone = onDone)
+
+    SecuritySteps.DisarmSettings ->
+      SecurityDisarmScreen(onBack = onBack, onDone = onDone, standalone = standalone)
+
+    SecuritySteps.ScheduleSystem ->
+      SecurityScheduleScreen(onBack = onBack, onDone = onDone, standalone = standalone)
+
     SecuritySteps.TestSystem -> SecuritySystemTestScreen(onBack = onBack, onDone = onDone)
-    SecuritySteps.InviteHouseholds -> SecurityInviteScreen(onBack = onBack, onDone = onDone)
-    SecuritySteps.ContactInformation -> SecurityContactScreen(onBack = onBack, onDone = onDone)
+
+    SecuritySteps.InviteHouseholds ->
+      SecurityInviteScreen(onBack = onBack, onDone = onDone, standalone = standalone)
+
+    SecuritySteps.ContactInformation ->
+      SecurityContactScreen(onBack = onBack, onDone = onDone, standalone = standalone)
+
     else -> UnknownStep(onBack = onBack)
   }
 }
